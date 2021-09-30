@@ -1,7 +1,6 @@
 package com.minddo.jpashop.repository;
 
 import com.minddo.jpashop.domain.Address;
-import com.minddo.jpashop.domain.Order;
 import com.minddo.jpashop.domain.OrderStatus;
 import lombok.Data;
 
