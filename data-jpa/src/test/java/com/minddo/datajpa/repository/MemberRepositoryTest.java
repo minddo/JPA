@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -193,8 +194,31 @@ class MemberRepositoryTest {
             System.out.println("member.getTeam().getName() = " + member.getTeam().getName());
         }
 
+    }
+
+    @Test
+    public void queryHint(){
+        Member member1 = new Member("member1", 10);
+        memberRepository.save(member1);
+        em.flush();
+        em.clear();
+
+        Member findMember = memberRepository.findReadOnlyByUsername(member1.getUsername());
+        findMember.setUsername("member2");
+
+        em.flush();
+        //변경감지의 최대 단점은 비교할 대상의 객체가 있어야 하기 때문에 객체가 2배 필요
+        //최적화가 되어있다고 해도 메모리를 더 많이 쓰게 된다.
+        //하지만 조회 순간에도 스냅샷을 만들기 때문에 최적화가 필요
+        //Query Hint는 readOnly mode 제공, 업데이트 되지 않음
+        //성능에는 별 차이가 없음 (보통 복잡한 쿼리에서 트래픽을 많이 잡아먹음)
 
     }
 
+    @Test
+    public void callCustom() {
+        List<Member> result = memberRepository.findMemberCustom();
+
+    }
 
 }
