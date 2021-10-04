@@ -14,7 +14,7 @@ import javax.persistence.*;
 )
 
 
-public class Member {
+public class Member extends BaseEntity {
     @Id @GeneratedValue
     @Column(name = "meber_id")
     private Long id;
