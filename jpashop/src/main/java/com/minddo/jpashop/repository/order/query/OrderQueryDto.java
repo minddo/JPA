@@ -1,20 +1,25 @@
-package com.minddo.jpashop.repository;
+package com.minddo.jpashop.repository.order.query;
 
 import com.minddo.jpashop.domain.Address;
 import com.minddo.jpashop.domain.OrderStatus;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
-public class OrderSimpleQueryDto {
+@EqualsAndHashCode(of = "orderId")
+public class OrderQueryDto {
+
     private Long orderId;
     private String name;
     private LocalDateTime orderDate;
     private OrderStatus orderStatus;
     private Address address;
+    private List<OrderItemQueryDto> orderItems;
 
-    public OrderSimpleQueryDto(Long orderId, String name, LocalDateTime orderDate, OrderStatus orderStatus, Address address) {
+    public OrderQueryDto(Long orderId, String name, LocalDateTime orderDate, OrderStatus orderStatus, Address address) {
         this.orderId = orderId;
         this.name = name;
         this.orderDate = orderDate;
