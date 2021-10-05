@@ -1,7 +1,10 @@
 package com.mindoo.querydsl.entity;
 
+import com.mindoo.querydsl.dto.MemberDto;
+import com.mindoo.querydsl.dto.QMemberDto;
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
@@ -286,7 +289,7 @@ public class QuerydslBasicTest {
                 .from(member)
                 .fetch();
     }
-    
+
     @Test
     public void constant() {
         List<Tuple> result = queryFactory
@@ -298,7 +301,7 @@ public class QuerydslBasicTest {
             System.out.println("tuple = " + tuple);
         }
     }
-    
+
     @Test
     public void concat() {
         List<String> result = queryFactory
@@ -311,6 +314,62 @@ public class QuerydslBasicTest {
             System.out.println("s = " + s);
         }
     }
+
+
+    @Test
+    public void findDtoByJPQL() {
+        List<MemberDto> result = em.createQuery("select new com.mindoo.querydsl.dto.MemberDto(m.username, m.age) from Member m", MemberDto.class)
+                .getResultList();
+
+        for (MemberDto memberDto : result) {
+            System.out.println("memberDto = " + memberDto);
+        }
+    }
+
+    @Test
+    public void findDtoBySetter() {
+        List<MemberDto> result = queryFactory
+                .select(Projections.bean(MemberDto.class
+                        , member.username
+                        , member.age
+                ))
+                .from(member)
+                .fetch();
+
+        for (MemberDto memberDto : result) {
+            System.out.println("memberDto = " + memberDto);
+        }
+    }
+
+    @Test
+    public void findDtoByField() {
+        List<MemberDto> result = queryFactory
+                .select(Projections.fields(MemberDto.class,
+                        member.username,
+                        member.age))
+                .from(member)
+                .fetch();
+
+        for (MemberDto memberDto : result) {
+            System.out.println("memberDto = " + memberDto);
+        }
+    }
+
+
+
+    //컴파일에 error를 찾을 수 있어서 더 선호되는 코드드
+   @Test
+    public void findDtoByQueryProjection() {
+        List<MemberDto> result = queryFactory
+                .select((new QMemberDto(member.username, member.age)))
+                .from(member)
+                .fetch();
+
+        for (MemberDto memberDto : result) {
+            System.out.println("memberDto = " + memberDto);
+        }
+    }
+
 
 
 
