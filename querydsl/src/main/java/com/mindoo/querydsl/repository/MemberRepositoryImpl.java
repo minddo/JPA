@@ -5,8 +5,12 @@ import com.mindoo.querydsl.dto.MemberTeamDto;
 import com.mindoo.querydsl.dto.QMemberTeamDto;
 import com.mindoo.querydsl.entity.Member;
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.QueryResults;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
@@ -94,6 +98,70 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom{
                 .fetch();
     }
 
+
+    @Override
+    public Page<MemberTeamDto> searchPageSimple(MemberSearchCondition condition, Pageable pageable) {
+        QueryResults<MemberTeamDto> results = queryFactory
+                .select(new QMemberTeamDto(
+                        member.id,
+                        member.username,
+                        member.age,
+                        team.id,
+                        team.name))
+                .from(member)
+                .leftJoin(member.team, team)
+                .where(
+                        usernameEq(condition.getUsername()),
+                        teamNameEq(condition.getTeamName()),
+                        ageGeo(condition.getAgeGeo()),
+                        ageLeo(condition.getAgeLeo())
+                )
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetchResults();
+
+        List<MemberTeamDto> content = results.getResults();
+        long total = results.getTotal();
+
+        return new PageImpl<>(content, pageable, total);
+    }
+
+    @Override
+    public Page<MemberTeamDto> searchPageComplex(MemberSearchCondition condition, Pageable pageable) {
+        List<MemberTeamDto> content = queryFactory
+                .select(new QMemberTeamDto(
+                        member.id,
+                        member.username,
+                        member.age,
+                        team.id,
+                        team.name))
+                .from(member)
+                .leftJoin(member.team, team)
+                .where(
+                        usernameEq(condition.getUsername()),
+                        teamNameEq(condition.getTeamName()),
+                        ageGeo(condition.getAgeGeo()),
+                        ageLeo(condition.getAgeLeo())
+                )
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        long total = queryFactory
+                .select(member)
+                .from(member)
+  //              .leftJoin(member.team, team)
+                .where(
+                        usernameEq(condition.getUsername()),
+                        teamNameEq(condition.getTeamName()),
+                        ageGeo(condition.getAgeGeo()),
+                        ageLeo(condition.getAgeLeo())
+                )
+                .fetchCount();
+
+        return new PageImpl<>(content, pageable, total);
+    }
+
     private BooleanExpression usernameEq(String username) {
         return hasText(username) ? member.username.eq(username) : null;
     }
@@ -109,4 +177,6 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom{
     private BooleanExpression ageLeo(Integer ageLeo) {
         return ageLeo != null ? member.age.loe(ageLeo) : null;
     }
+
+
 }
