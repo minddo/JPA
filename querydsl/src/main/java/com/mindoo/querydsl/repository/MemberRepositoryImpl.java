@@ -4,56 +4,38 @@ import com.mindoo.querydsl.dto.MemberSearchCondition;
 import com.mindoo.querydsl.dto.MemberTeamDto;
 import com.mindoo.querydsl.dto.QMemberTeamDto;
 import com.mindoo.querydsl.entity.Member;
-import com.mindoo.querydsl.entity.QTeam;
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.stereotype.Repository;
-import org.springframework.util.StringUtils;
 
 import javax.persistence.EntityManager;
 import java.util.List;
-import java.util.Optional;
 
 import static com.mindoo.querydsl.entity.QMember.member;
 import static com.mindoo.querydsl.entity.QTeam.team;
 import static org.springframework.util.StringUtils.hasText;
-import static org.springframework.util.StringUtils.isEmpty;
 
 @Repository
-public class MemberJpaRepository {
+public class MemberRepositoryImpl implements MemberRepositoryCustom{
 
     private final EntityManager em;
     private final JPAQueryFactory queryFactory;
 
-    public MemberJpaRepository(EntityManager em) {
+    public MemberRepositoryImpl(EntityManager em) {
         this.em = em;
         this.queryFactory = new JPAQueryFactory(em);
     }
 
-    public void save(Member member) {
-        em.persist(member);
+
+    @Override
+    public List<Member> findAll_Querydsl() {
+        return queryFactory
+                .selectFrom(member)
+                .fetch();
     }
 
-    public Optional<Member> findById(Long id) {
-        Member findMember = em.find(Member.class, id);
-        return Optional.ofNullable(findMember);
-    }
-
-    public List<Member> findAll() {
-        return em.createQuery("select m from Member m", Member.class)
-                .getResultList();
-    }
-
-
-
-    public List<Member> findByUsername(String username) {
-        return em.createQuery("select m from Member m where m.username = :username", Member.class)
-                .setParameter("username", username)
-                .getResultList();
-    }
-
+    @Override
     public List<Member> findByUsername_Querydsl(String username) {
         return queryFactory
                 .selectFrom(member)
@@ -61,6 +43,7 @@ public class MemberJpaRepository {
                 .fetch();
     }
 
+    @Override
     public List<MemberTeamDto> searchByBuilder(MemberSearchCondition condition) {
 
         BooleanBuilder builder = new BooleanBuilder();
@@ -90,6 +73,7 @@ public class MemberJpaRepository {
                 .fetch();
     }
 
+    @Override
     public List<MemberTeamDto> search(MemberSearchCondition condition) {
 
         return queryFactory
